@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GSM Complex — मूल्य सूची व्यवस्थापन</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F4C4F">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#20261F;
+    --ink-soft:#4B5347;
+    --paper:#EFE6D8;
+    --surface:#FFFDF8;
+    --surface-line:#E1D6C2;
+    --teal:#0F4C4F;
+    --teal-deep:#0A3638;
+    --cream-on-teal:#F7E9C9;
+    --marigold:#E8A23D;
+    --marigold-deep:#C97F1F;
+    --sindoor:#C1442E;
+    --sindoor-soft:#F4DAD3;
+    --ok:#3F7A52;
+    --shadow: 0 6px 18px rgba(15,76,79,0.12);
+    --radius: 16px;
+    font-family: "Noto Sans", "Noto Sans Devanagari", sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 100% 0%, rgba(232,162,61,0.08), transparent 40%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:96px;
+  }
+  h1,h2,h3, .display{ font-family:"Baloo 2","Noto Sans Devanagari",sans-serif; }
+
+  /* ---------- Header / signboard ---------- */
+  .signboard{
+    background:
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 2px, transparent 2px, transparent 8px),
+      linear-gradient(180deg, var(--teal) 0%, var(--teal-deep) 100%);
+    color:var(--cream-on-teal);
+    padding:22px 18px 26px;
+    border-bottom:6px solid var(--marigold);
+    position:relative;
+  }
+  .signboard-row{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    max-width:980px; margin:0 auto;
+  }
+  .shop-name{
+    font-size:clamp(26px,6vw,36px);
+    font-weight:800;
+    letter-spacing:0.5px;
+    margin:0;
+    line-height:1.05;
+    text-shadow:0 2px 0 rgba(0,0,0,0.18);
+  }
+  .shop-sub{
+    margin:4px 0 0;
+    font-size:14px;
+    color:var(--marigold);
+    font-weight:600;
+    letter-spacing:0.3px;
+  }
+  .shop-meta{
+    margin:2px 0 0;
+    font-size:12.5px;
+    color:rgba(247,233,201,0.75);
+  }
+  .icon-btn{
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(247,233,201,0.35);
+    color:var(--cream-on-teal);
+    width:42px;height:42px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer; flex-shrink:0;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .icon-btn:hover{ background:rgba(255,255,255,0.18); }
+  .icon-btn:active{ transform:scale(0.94); }
+
+  /* ---------- Stats ---------- */
+  .stats{
+    max-width:980px; margin:-18px auto 0; padding:0 18px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    position:relative; z-index:2;
+  }
+  .stat-card{
+    background:var(--surface);
+    border-radius:14px;
+    padding:12px 14px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--surface-line);
+  }
+  .stat-num{ font-family:"Baloo 2"; font-size:20px; font-weight:700; color:var(--teal); }
+  .stat-label{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; font-weight:600; }
+
+  /* ---------- Controls ---------- */
+  .controls{
+    max-width:980px; margin:18px auto 0; padding:0 18px;
+  }
+  .search-wrap{
+    position:relative;
+  }
+  .search-wrap input{
+    width:100%;
+    padding:13px 16px 13px 42px;
+    border-radius:12px;
+    border:1.5px solid var(--surface-line);
+    background:var(--surface);
+    font-size:15px;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  .search-wrap input:focus{ outline:2px solid var(--marigold); outline-offset:1px; }
+  .search-wrap svg{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    opacity:0.5;
+  }
+  .chips{
+    display:flex; gap:8px; overflow-x:auto; padding:14px 2px 4px;
+    scrollbar-width:none;
+  }
+  .chips::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex-shrink:0;
+    padding:8px 16px;
+    border-radius:999px;
+    border:1.5px solid var(--surface-line);
+    background:var(--surface);
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    white-space:nowrap;
+    transition:all .15s ease;
+  }
+  .chip.active{
+    background:var(--teal);
+    border-color:var(--teal);
+    color:var(--cream-on-teal);
+  }
+
+  /* ---------- Grid / Tags ---------- */
+  .grid{
+    max-width:980px; margin:8px auto 0; padding:14px 18px 0;
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px;
+  }
+  .tag-card{
+    background:var(--surface);
+    border:1.5px dashed var(--surface-line);
+    border-radius:14px;
+    padding:16px 16px 14px;
+    position:relative;
+    box-shadow:var(--shadow);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .tag-card:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(15,76,79,0.16); }
+  .tag-hole{
+    position:absolute; top:14px; right:14px;
+    width:16px; height:16px; border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--surface-line);
+  }
+  .tag-cat{
+    display:inline-block;
+    font-size:11px; font-weight:700;
+    color:var(--teal);
+    background:rgba(15,76,79,0.08);
+    padding:3px 10px; border-radius:999px;
+    margin-bottom:8px;
+    max-width:75%;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .tag-name{
+    font-size:16px; font-weight:600;
+    color:var(--ink);
+    margin:0 0 10px;
+    padding-right:20px;
+    line-height:1.3;
+    min-height:21px;
+    cursor:text;
+    border-radius:6px;
+  }
+  .tag-name:focus{ outline:2px solid var(--marigold); outline-offset:2px; }
+  .tag-price-row{
+    display:flex; align-items:baseline; gap:4px;
+    font-family:"Baloo 2";
+    color:var(--sindoor);
+    margin-bottom:10px;
+  }
+  .tag-price-cur{ font-size:15px; font-weight:700; opacity:0.85; }
+  .tag-price{
+    font-size:26px; font-weight:800;
+    cursor:text;
+    border-radius:6px;
+    padding:0 2px;
+    min-width:20px;
+    display:inline-block;
+  }
+  .tag-price:focus{ outline:2px solid var(--marigold); outline-offset:2px; }
+  .tag-foot{
+    display:flex; align-items:center; justify-content:space-between;
+    border-top:1px dashed var(--surface-line);
+    padding-top:10px; margin-top:4px;
+  }
+  .stock-pill{
+    font-size:12px; font-weight:700;
+    padding:4px 10px; border-radius:999px;
+    background:rgba(63,122,82,0.12); color:var(--ok);
+    display:flex; align-items:center; gap:5px;
+    cursor:text;
+  }
+  .stock-pill[data-low="1"]{
+    background:var(--sindoor-soft); color:var(--sindoor);
+  }
+  .tag-actions{ display:flex; gap:6px; }
+  .mini-btn{
+    width:30px; height:30px; border-radius:8px;
+    border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--ink-soft);
+    transition:background .15s ease, color .15s ease;
+  }
+  .mini-btn:hover{ background:var(--paper); color:var(--ink); }
+  .mini-btn.danger:hover{ background:var(--sindoor-soft); color:var(--sindoor); }
+
+  .empty-state{
+    max-width:980px; margin:40px auto; padding:40px 20px;
+    text-align:center; color:var(--ink-soft);
+  }
+  .empty-state svg{ opacity:0.35; margin-bottom:10px; }
+  .empty-state h3{ margin:0 0 6px; color:var(--ink); }
+
+  /* ---------- FAB ---------- */
+  .fab{
+    position:fixed; right:20px; bottom:24px;
+    width:60px; height:60px; border-radius:50%;
+    background:var(--marigold);
+    color:var(--teal-deep);
+    border:none;
+    box-shadow:0 8px 20px rgba(201,127,31,0.45);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; z-index:40;
+    transition:transform .15s ease;
+  }
+  .fab:active{ transform:scale(0.92); }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(15,20,17,0.55);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:100; opacity:0; pointer-events:none;
+    transition:opacity .18s ease;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  @media(min-width:640px){ .overlay{ align-items:center; } }
+  .modal{
+    background:var(--surface);
+    width:100%; max-width:480px;
+    border-radius:20px 20px 0 0;
+    padding:22px 20px 24px;
+    max-height:88vh; overflow-y:auto;
+    transform:translateY(24px);
+    transition:transform .2s ease;
+  }
+  .overlay.show .modal{ transform:translateY(0); }
+  @media(min-width:640px){ .modal{ border-radius:20px; } }
+  .modal h2{ margin:0 0 4px; font-size:21px; color:var(--teal-deep); }
+  .modal .modal-sub{ margin:0 0 18px; font-size:13px; color:var(--ink-soft); }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }
+  .field input, .field select{
+    width:100%; padding:12px 13px; border-radius:10px;
+    border:1.5px solid var(--surface-line); font-size:15px; font-family:inherit;
+    background:var(--paper);
+  }
+  .field input:focus, .field select:focus{ outline:2px solid var(--marigold); border-color:var(--marigold); }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .modal-actions{ display:flex; gap:10px; margin-top:18px; }
+  .btn{
+    flex:1; padding:13px; border-radius:12px; border:none;
+    font-weight:700; font-size:14.5px; cursor:pointer; font-family:inherit;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .btn-primary{ background:var(--teal); color:var(--cream-on-teal); }
+  .btn-ghost{ background:var(--paper); color:var(--ink-soft); }
+  .btn-danger{ background:var(--sindoor); color:#fff; }
+
+  .settings-block{ margin-bottom:18px; }
+  .settings-block h4{ margin:0 0 10px; font-size:13px; color:var(--teal-deep); text-transform:uppercase; letter-spacing:0.4px; }
+  .file-row{ display:flex; gap:10px; }
+  .file-row .btn{ font-size:13px; padding:11px; }
+  input[type="file"]{ display:none; }
+
+  .toast{
+    position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:#fff; padding:11px 20px; border-radius:999px;
+    font-size:13.5px; font-weight:600; opacity:0; pointer-events:none;
+    transition:all .25s ease; z-index:200; box-shadow:0 8px 20px rgba(0,0,0,0.25);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header class="signboard">
+  <div class="signboard-row">
+    <div>
+      <h1 class="shop-name" id="shopName">GSM Complex</h1>
+      <p class="shop-sub" id="shopSub">अतरिया, कैलाली</p>
+      <p class="shop-meta" id="shopMeta"></p>
+    </div>
+    <button class="icon-btn" id="settingsBtn" title="सेटिङ">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-num" id="statCount">0</div>
+    <div class="stat-label">जम्मा वस्तु</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" id="statValue">रू 0</div>
+    <div class="stat-label">कुल स्टक मूल्य</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" id="statLow">0</div>
+    <div class="stat-label">कम स्टक</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="वस्तु खोज्नुहोस्...">
+  </div>
+  <div class="chips" id="chips"></div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty-state" id="emptyState" style="display:none;">
+  <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg>
+  <h3 id="emptyTitle">कुनै वस्तु फेला परेन</h3>
+  <p id="emptySub">तल + थिच्नुहोस् र नयाँ वस्तु थप्नुहोस्।</p>
+</div>
+
+<button class="fab" id="addBtn" title="नयाँ वस्तु थप्नुहोस्">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<!-- Add/Edit item modal -->
+<div class="overlay" id="itemOverlay">
+  <div class="modal">
+    <h2 id="itemModalTitle">नयाँ वस्तु</h2>
+    <p class="modal-sub">नाम, मूल्य, स्टक र वर्ग भर्नुहोस्।</p>
+    <div class="field">
+      <label>वस्तुको नाम</label>
+      <input type="text" id="fName" placeholder="जस्तै: Samsung A15 फोन कभर">
+    </div>
+    <div class="field">
+      <label>वर्ग (Category)</label>
+      <input type="text" id="fCategory" list="catList" placeholder="जस्तै: मोबाइल फोन">
+      <datalist id="catList"></datalist>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>मूल्य (रू)</label>
+        <input type="number" id="fPrice" min="0" inputmode="decimal" placeholder="0">
+      </div>
+      <div class="field">
+        <label>स्टक संख्या</label>
+        <input type="number" id="fStock" min="0" inputmode="numeric" placeholder="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="itemCancel">रद्द गर्नुहोस्</button>
+      <button class="btn btn-primary" id="itemSave">सुरक्षित गर्नुहोस्</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h2>सेटिङ</h2>
+    <p class="modal-sub">पसलको जानकारी र डाटा व्यवस्थापन</p>
+
+    <div class="settings-block">
+      <h4>पसलको जानकारी</h4>
+      <div class="field">
+        <label>पसलको नाम</label>
+        <input type="text" id="sName" placeholder="GSM Complex">
+      </div>
+      <div class="field">
+        <label>ठेगाना</label>
+        <input type="text" id="sAddress" placeholder="अतरिया, कैलाली">
+      </div>
+      <div class="field">
+        <label>फोन नम्बर</label>
+        <input type="text" id="sPhone" placeholder="98XXXXXXXX">
+      </div>
+    </div>
+
+    <div class="settings-block">
+      <h4>ब्याकअप र डाटा</h4>
+      <div class="file-row">
+        <button class="btn btn-ghost" id="exportBtn">⬇ Export (JSON)</button>
+        <button class="btn btn-ghost" id="importBtn">⬆ Import (JSON)</button>
+        <input type="file" id="importFile" accept="application/json">
+      </div>
+    </div>
+
+    <div class="settings-block">
+      <h4>खतरा क्षेत्र</h4>
+      <button class="btn btn-danger" id="clearBtn" style="width:100%;">सबै वस्तु मेटाउनुहोस्</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="settingsCancel">बन्द गर्नुहोस्</button>
+      <button class="btn btn-primary" id="settingsSave">सुरक्षित गर्नुहोस्</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  const STORE_KEY = "gsm_complex_shop_v1";
+  const LOW_STOCK_THRESHOLD = 3;
+
+  const defaultData = {
+    shop: { name: "GSM Complex", address: "अतरिया, कैलाली", phone: "" },
+    items: [
+      { id: cryptoId(), name: "Samsung A15 फोन कभर", category: "एक्सेसरीज", price: 250, stock: 18 },
+      { id: cryptoId(), name: "Type-C चार्जर केबल", category: "एक्सेसरीज", price: 180, stock: 30 },
+      { id: cryptoId(), name: "Ncell रिचार्ज कार्ड रु.100", category: "सिम/रिचार्ज", price: 100, stock: 50 },
+      { id: cryptoId(), name: "टेम्पर्ड ग्लास (यूनिवर्सल)", category: "एक्सेसरीज", price: 120, stock: 2 },
+      { id: cryptoId(), name: "Redmi 13C ब्याट्री", category: "मर्मत पार्ट्स", price: 1450, stock: 4 }
+    ]
+  };
+
+  function cryptoId(){
+    return "id" + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  }
+
+  function loadData(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if(!raw) return structuredCloneSafe(defaultData);
+      const parsed = JSON.parse(raw);
+      if(!parsed.shop) parsed.shop = defaultData.shop;
+      if(!Array.isArray(parsed.items)) parsed.items = [];
+      return parsed;
+    }catch(e){
+      console.error("Load failed, using defaults", e);
+      return structuredCloneSafe(defaultData);
+    }
+  }
+  function structuredCloneSafe(o){ return JSON.parse(JSON.stringify(o)); }
+
+  function saveData(){
+    try{
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    }catch(e){
+      console.error("Save failed", e);
+      showToast("⚠ सुरक्षित गर्न सकिएन");
+    }
+  }
+
+  let state = loadData();
+  let activeCategory = "सबै";
+  let searchTerm = "";
+  let editingId = null;
+
+  // ---------- DOM refs ----------
+  const grid = document.getElementById("grid");
+  const chips = document.getElementById("chips");
+  const emptyState = document.getElementById("emptyState");
+  const searchInput = document.getElementById("searchInput");
+  const statCount = document.getElementById("statCount");
+  const statValue = document.getElementById("statValue");
+  const statLow = document.getElementById("statLow");
+  const shopNameEl = document.getElementById("shopName");
+  const shopSubEl = document.getElementById("shopSub");
+  const shopMetaEl = document.getElementById("shopMeta");
+
+  const itemOverlay = document.getElementById("itemOverlay");
+  const itemModalTitle = document.getElementById("itemModalTitle");
+  const fName = document.getElementById("fName");
+  const fCategory = document.getElementById("fCategory");
+  const fPrice = document.getElementById("fPrice");
+  const fStock = document.getElementById("fStock");
+  const catList = document.getElementById("catList");
+
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const sName = document.getElementById("sName");
+  const sAddress = document.getElementById("sAddress");
+  const sPhone = document.getElementById("sPhone");
+
+  const toastEl = document.getElementById("toast");
+  let toastTimer = null;
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toastEl.classList.remove("show"), 1800);
+  }
+
+  function fmtMoney(n){
+    n = Number(n)||0;
+    return "रू " + n.toLocaleString("en-IN");
+  }
+
+  // ---------- Rendering ----------
+  function renderHeader(){
+    shopNameEl.textContent = state.shop.name || "GSM Complex";
+    shopSubEl.textContent = state.shop.address || "";
+    shopMetaEl.textContent = state.shop.phone ? ("☎ " + state.shop.phone) : "";
+  }
+
+  function getCategories(){
+    const set = new Set(state.items.map(i=>i.category).filter(Boolean));
+    return Array.from(set).sort();
+  }
+
+  function renderChips(){
+    const cats = getCategories();
+    const all = ["सबै", ...cats];
+    chips.innerHTML = "";
+    all.forEach(cat=>{
+      const el = document.createElement("button");
+      el.className = "chip" + (activeCategory===cat ? " active":"");
+      el.textContent = cat;
+      el.addEventListener("click", ()=>{ activeCategory = cat; renderChips(); renderGrid(); });
+      chips.appendChild(el);
+    });
+    catList.innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">`).join("");
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+  }
+
+  function filteredItems(){
+    return state.items.filter(item=>{
+      const matchesCat = activeCategory==="सबै" || item.category===activeCategory;
+      const matchesSearch = !searchTerm || item.name.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesCat && matchesSearch;
+    });
+  }
+
+  function renderStats(){
+    statCount.textContent = state.items.length;
+    const totalValue = state.items.reduce((sum,i)=> sum + (Number(i.price)||0)*(Number(i.stock)||0), 0);
+    statValue.textContent = fmtMoney(totalValue);
+    const low = state.items.filter(i=> Number(i.stock) <= LOW_STOCK_THRESHOLD).length;
+    statLow.textContent = low;
+  }
+
+  function renderGrid(){
+    const items = filteredItems();
+    grid.innerHTML = "";
+    if(items.length === 0){
+      emptyState.style.display = "block";
+      grid.style.display = "none";
+    }else{
+      emptyState.style.display = "none";
+      grid.style.display = "grid";
+    }
+    items.forEach(item=>{
+      const card = document.createElement("div");
+      card.className = "tag-card";
+      const low = Number(item.stock) <= LOW_STOCK_THRESHOLD;
+      card.innerHTML = `
+        <div class="tag-hole"></div>
+        <span class="tag-cat">${escapeHtml(item.category || "बर्गिकृत नभएको")}</span>
+        <div class="tag-name" contenteditable="true" spellcheck="false" data-field="name" data-id="${item.id}">${escapeHtml(item.name)}</div>
+        <div class="tag-price-row">
+          <span class="tag-price-cur">रू</span>
+          <span class="tag-price" contenteditable="true" spellcheck="false" data-field="price" data-id="${item.id}">${Number(item.price)||0}</span>
+        </div>
+        <div class="tag-foot">
+          <span class="stock-pill" data-low="${low?1:0}" contenteditable="true" spellcheck="false" data-field="stock" data-id="${item.id}">${Number(item.stock)||0} थान</span>
+          <div class="tag-actions">
+            <button class="mini-btn" data-action="edit" data-id="${item.id}" title="पूरा सम्पादन">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <button class="mini-btn danger" data-action="delete" data-id="${item.id}" title="मेटाउनुहोस्">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function renderAll(){
+    renderHeader();
+    renderChips();
+    renderStats();
+    renderGrid();
+  }
+
+  // ---------- Inline editing ----------
+  grid.addEventListener("focusout", (e)=>{
+    const target = e.target;
+    if(!target.dataset || !target.dataset.field) return;
+    const id = target.dataset.id;
+    const field = target.dataset.field;
+    const item = state.items.find(i=>i.id===id);
+    if(!item) return;
+
+    if(field === "name"){
+      const val = target.textContent.trim();
+      item.name = val || item.name;
+    } else if(field === "price"){
+      const val = parseFloat(target.textContent.replace(/[^\d.]/g,""));
+      item.price = isNaN(val) ? item.price : val;
+    } else if(field === "stock"){
+      const val = parseInt(target.textContent.replace(/[^\d]/g,""));
+      item.stock = isNaN(val) ? item.stock : val;
+    }
+    saveData();
+    renderStats();
+    renderChips();
+    // re-render this card's numeric fields cleanly without losing focus context
+    renderGrid();
+    showToast("✓ अपडेट भयो");
+  });
+
+  grid.addEventListener("keydown", (e)=>{
+    if(e.target.hasAttribute("contenteditable") && e.key === "Enter"){
+      e.preventDefault();
+      e.target.blur();
+    }
+  });
+
+  grid.addEventListener("click", (e)=>{
+    const btn = e.target.closest("[data-action]");
+    if(!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    if(action === "delete"){
+      const item = state.items.find(i=>i.id===id);
+      if(item && confirm(`"${item.name}" मेटाउने पक्का हो?`)){
+        state.items = state.items.filter(i=>i.id!==id);
+        saveData();
+        renderAll();
+        showToast("वस्तु मेटियो");
+      }
+    } else if(action === "edit"){
+      openItemModal(id);
+    }
+  });
+
+  // ---------- Add / Edit modal ----------
+  const addBtn = document.getElementById("addBtn");
+  const itemCancel = document.getElementById("itemCancel");
+  const itemSave = document.getElementById("itemSave");
+
+  function openItemModal(id){
+    editingId = id || null;
+    if(id){
+      const item = state.items.find(i=>i.id===id);
+      itemModalTitle.textContent = "वस्तु सम्पादन गर्नुहोस्";
+      fName.value = item.name;
+      fCategory.value = item.category || "";
+      fPrice.value = item.price;
+      fStock.value = item.stock;
+    } else {
+      itemModalTitle.textContent = "नयाँ वस्तु";
+      fName.value = "";
+      fCategory.value = activeCategory !== "सबै" ? activeCategory : "";
+      fPrice.value = "";
+      fStock.value = "";
+    }
+    itemOverlay.classList.add("show");
+    setTimeout(()=> fName.focus(), 50);
+  }
+  function closeItemModal(){
+    itemOverlay.classList.remove("show");
+    editingId = null;
+  }
+
+  addBtn.addEventListener("click", ()=> openItemModal(null));
+  itemCancel.addEventListener("click", closeItemModal);
+  itemOverlay.addEventListener("click", (e)=>{ if(e.target===itemOverlay) closeItemModal(); });
+
+  itemSave.addEventListener("click", ()=>{
+    const name = fName.value.trim();
+    if(!name){ fName.focus(); showToast("⚠ नाम लेख्नुहोस्"); return; }
+    const category = fCategory.value.trim() || "अन्य";
+    const price = parseFloat(fPrice.value) || 0;
+    const stock = parseInt(fStock.value) || 0;
+
+    if(editingId){
+      const item = state.items.find(i=>i.id===editingId);
+      Object.assign(item, { name, category, price, stock });
+      showToast("✓ वस्तु अपडेट भयो");
+    } else {
+      state.items.unshift({ id: cryptoId(), name, category, price, stock });
+      showToast("✓ नयाँ वस्तु थपियो");
+    }
+    saveData();
+    closeItemModal();
+    renderAll();
+  });
+
+  // ---------- Search ----------
+  searchInput.addEventListener("input", (e)=>{
+    searchTerm = e.target.value;
+    renderGrid();
+  });
+
+  // ---------- Settings ----------
+  const settingsBtn = document.getElementById("settingsBtn");
+  const settingsCancel = document.getElementById("settingsCancel");
+  const settingsSave = document.getElementById("settingsSave");
+  const exportBtn = document.getElementById("exportBtn");
+  const importBtn = document.getElementById("importBtn");
+  const importFile = document.getElementById("importFile");
+  const clearBtn = document.getElementById("clearBtn");
+
+  function openSettings(){
+    sName.value = state.shop.name || "";
+    sAddress.value = state.shop.address || "";
+    sPhone.value = state.shop.phone || "";
+    settingsOverlay.classList.add("show");
+  }
+  function closeSettings(){ settingsOverlay.classList.remove("show"); }
+
+  settingsBtn.addEventListener("click", openSettings);
+  settingsCancel.addEventListener("click", closeSettings);
+  settingsOverlay.addEventListener("click", (e)=>{ if(e.target===settingsOverlay) closeSettings(); });
+
+  settingsSave.addEventListener("click", ()=>{
+    state.shop.name = sName.value.trim() || "GSM Complex";
+    state.shop.address = sAddress.value.trim();
+    state.shop.phone = sPhone.value.trim();
+    saveData();
+    renderHeader();
+    closeSettings();
+    showToast("✓ सेटिङ सुरक्षित भयो");
+  });
+
+  exportBtn.addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `gsm-complex-backup-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("✓ ब्याकअप डाउनलोड भयो");
+  });
+
+  importBtn.addEventListener("click", ()=> importFile.click());
+  importFile.addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const parsed = JSON.parse(ev.target.result);
+        if(!Array.isArray(parsed.items)) throw new Error("invalid format");
+        state = {
+          shop: parsed.shop || state.shop,
+          items: parsed.items
+        };
+        saveData();
+        renderAll();
+        closeSettings();
+        showToast("✓ डाटा आयात भयो");
+      }catch(err){
+        showToast("⚠ फाइल पढ्न सकिएन");
+      }
+    };
+    reader.readAsText(file);
+    importFile.value = "";
+  });
+
+  clearBtn.addEventListener("click", ()=>{
+    if(confirm("सबै वस्तु सधैंको लागि मेटाउने पक्का हो? यो पूर्ववत हुन सक्दैन।")){
+      state.items = [];
+      saveData();
+      renderAll();
+      closeSettings();
+      showToast("सबै वस्तु मेटियो");
+    }
+  });
+
+  // ---------- Init ----------
+  renderAll();
+
+  // Register service worker for offline use (best-effort, ignore failure)
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", ()=>{
+      navigator.serviceWorker.register("sw.js").catch(()=>{});
+    });
+  }
+})();
+</script>
+</body>
+</html>
